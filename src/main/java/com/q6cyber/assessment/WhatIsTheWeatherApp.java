@@ -72,8 +72,8 @@ public class WhatIsTheWeatherApp {
         objectMapper.readValue(forecastResponse.getEntity().getContent(), ForecastResponse.class);
 
     /*
-      Create WeatherSummary from forecastResponsePayload and call System.out.println(...) on it
-      with the following requirements:
+      Create a new class called WeatherSummary from forecastResponsePayload and call
+      System.out.println(...) on it with the following requirements:
 
       - getTime() : the time the WeatherSummary was created
       - getCurrentTemp() : the temperature of the very first period in the payload
