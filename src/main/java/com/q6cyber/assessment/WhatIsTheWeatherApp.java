@@ -3,20 +3,22 @@ package com.q6cyber.assessment;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.q6cyber.assessment.api.Config;
 import com.q6cyber.assessment.api.geocode.GeocodeResponse;
 import com.q6cyber.assessment.api.weather.ForecastGridResponse;
 import com.q6cyber.assessment.api.weather.ForecastResponse;
+
+import java.io.IOException;
 import java.util.List;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.*;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+
 
 public class WhatIsTheWeatherApp {
 
@@ -38,39 +40,90 @@ public class WhatIsTheWeatherApp {
 
     Add unit tests
    */
-  public static void main(String[] args) throws Exception {
-    CloseableHttpClient httpClient = HttpClients.createDefault();
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    private static Object makeGetRequest(
+            CloseableHttpClient httpClient,
+            ObjectMapper objectMapper,
+            String url,
+            Class<?> classToDeserialize
+    ) throws IOException {
+        HttpGet request = new HttpGet(url);
+        return sendRequest(httpClient, objectMapper, request, classToDeserialize);
+    }
+
+    private static Object makePostRequest(
+            CloseableHttpClient httpClient,
+            ObjectMapper objectMapper,
+            String url,
+            Class<?> classToDeserialize,
+            List<NameValuePair> params
+    ) throws IOException {
+        HttpPost request = new HttpPost(url);
+        request.setEntity(new UrlEncodedFormEntity(params, UTF_8));
+        return sendRequest(httpClient, objectMapper, request, classToDeserialize);
+    }
+
+    private static Object sendRequest(
+            CloseableHttpClient httpClient,
+            ObjectMapper objectMapper,
+            HttpUriRequest request,
+            Class<?> classToDeserialize
+    ) throws IOException {
+        CloseableHttpResponse httpResponse = httpClient.execute(request);
+        Object payload = objectMapper.readValue(httpResponse.getEntity().getContent(), classToDeserialize);
+        httpResponse.close();
+        return payload;
+    }
 
     // Find the latitude and longitude of Cumming, GA from the geocode api
-    HttpPost geocodeRequest = new HttpPost("https://geocode.xyz");
-    List<NameValuePair> geocodeRequestParameters =
-        List.of(
-            new BasicNameValuePair("locate", "Cumming, GA, United States"),
-            new BasicNameValuePair("geoit", "JSON")
+    private static GeocodeResponse getGoecodeResponse(CloseableHttpClient httpClient, ObjectMapper objectMapper) throws IOException {
+
+        List<NameValuePair> geocodeRequestParameters =
+                List.of(
+                        new BasicNameValuePair("locate", "Cumming, GA, United States"),
+                        new BasicNameValuePair("geoit", "JSON")
+                );
+
+        return (GeocodeResponse) makePostRequest(
+                httpClient,
+                objectMapper,
+                Config.getGeocodeUrl(),
+                GeocodeResponse.class,
+                geocodeRequestParameters
         );
-    geocodeRequest.setEntity(new UrlEncodedFormEntity(geocodeRequestParameters, UTF_8));
-    CloseableHttpResponse geocodeResponse = httpClient.execute(geocodeRequest); // response should be closed properly
-    GeocodeResponse geocodeResponsePayload =
-        objectMapper.readValue(geocodeResponse.getEntity().getContent(), GeocodeResponse.class);
+    }
 
     // Get the url to the weather forecast for Cumming, GA based on the latitude and longitude from the weather api
-    HttpGet forecastGridRequest =
-        new HttpGet(String.format("https://api.weather.gov/points/%s,%s",
-            geocodeResponsePayload.getLatt(), geocodeResponsePayload.getLongt()));
-    CloseableHttpResponse forecastGridResponse = httpClient.execute(forecastGridRequest);
-    ForecastGridResponse forecastGridResponsePayload =
-        objectMapper.readValue(
-            forecastGridResponse.getEntity().getContent(), ForecastGridResponse.class);
+    private static ForecastGridResponse getForecastGridResponse(CloseableHttpClient httpClient, ObjectMapper objectMapper, GeocodeResponse geocodeResponse) throws IOException {
+        return (ForecastGridResponse) makeGetRequest(
+                httpClient,
+                objectMapper,
+                String.format("https://api.weather.gov/points/%s,%s", geocodeResponse.getLatt(), geocodeResponse.getLongt()),
+                ForecastGridResponse.class
+        );
+    }
 
     // Get the hourly forecast for Cumming, GA using the hourly forecast url also calling the weather api
-    HttpGet forecastRequest =
-        new HttpGet(forecastGridResponsePayload.getProperties().getForecastHourly());
-    CloseableHttpResponse forecastResponse = httpClient.execute(forecastRequest);
-    ForecastResponse forecastResponsePayload =
-        objectMapper.readValue(forecastResponse.getEntity().getContent(), ForecastResponse.class);
+    private static ForecastResponse getForecastResponse(CloseableHttpClient httpClient, ObjectMapper objectMapper, ForecastGridResponse forecastGridResponse) throws IOException {
+        return (ForecastResponse) makeGetRequest(
+                httpClient,
+                objectMapper,
+                forecastGridResponse.getProperties().getForecastHourly(),
+                ForecastResponse.class
+        );
+    }
 
+    public static void main(String[] args) throws IOException {
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        ObjectMapper objectMapper = Config.getObjectMapper();
+
+        GeocodeResponse geocodeResponse = getGoecodeResponse(httpClient, objectMapper);
+        ForecastGridResponse forecastGridResponse = getForecastGridResponse(httpClient, objectMapper, geocodeResponse);
+        ForecastResponse forecastResponse = getForecastResponse(httpClient, objectMapper, forecastGridResponse);
+
+        System.out.println(forecastResponse);
+
+        httpClient.close();
     /*
       Create a new class called WeatherSummary from forecastResponsePayload and call
       System.out.println(...) on it with the following requirements:
@@ -128,5 +181,5 @@ public class WhatIsTheWeatherApp {
         }
       }
      */
-  }
+    }
 }
