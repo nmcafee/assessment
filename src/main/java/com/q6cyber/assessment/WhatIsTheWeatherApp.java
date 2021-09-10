@@ -77,13 +77,11 @@ public class WhatIsTheWeatherApp {
 
     // Find the latitude and longitude of Cumming, GA from the geocode api
     private static GeocodeResponse getGoecodeResponse(CloseableHttpClient httpClient, ObjectMapper objectMapper) throws IOException {
-
         List<NameValuePair> geocodeRequestParameters =
                 List.of(
                         new BasicNameValuePair("locate", "Cumming, GA, United States"),
                         new BasicNameValuePair("geoit", "JSON")
                 );
-
         return (GeocodeResponse) makePostRequest(
                 httpClient,
                 objectMapper,
@@ -121,9 +119,11 @@ public class WhatIsTheWeatherApp {
         ForecastGridResponse forecastGridResponse = getForecastGridResponse(httpClient, objectMapper, geocodeResponse);
         ForecastResponse forecastResponse = getForecastResponse(httpClient, objectMapper, forecastGridResponse);
 
+        httpClient.close();
+
         System.out.println(forecastResponse);
 
-        httpClient.close();
+        WeatherSummary weatherSummary = new WeatherSummary(forecastResponse);
     /*
       Create a new class called WeatherSummary from forecastResponsePayload and call
       System.out.println(...) on it with the following requirements:
