@@ -13,7 +13,7 @@ import java.util.Date;
 @ToString
 @EqualsAndHashCode
 final class WeatherSummary implements Comparable<WeatherSummary> {
-    //sort collections of this object by time, most recent first
+    // Sort collections of this object by time, most recent first
     @Override
     public int compareTo(WeatherSummary o) {
         return o.getTime().compareTo(this.getTime());
