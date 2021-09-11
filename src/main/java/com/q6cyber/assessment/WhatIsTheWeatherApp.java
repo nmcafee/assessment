@@ -10,7 +10,7 @@ import com.q6cyber.assessment.api.weather.ForecastGridResponse;
 import com.q6cyber.assessment.api.weather.ForecastResponse;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -111,7 +111,7 @@ public class WhatIsTheWeatherApp {
         );
     }
 
-    public static void main(String[] args) throws IOException {
+    private static ForecastResponse checkWeatherForecast() throws IOException {
         CloseableHttpClient httpClient = HttpClients.createDefault();
         ObjectMapper objectMapper = Config.getObjectMapper();
 
@@ -120,6 +120,11 @@ public class WhatIsTheWeatherApp {
         ForecastResponse forecastResponse = getForecastResponse(httpClient, objectMapper, forecastGridResponse);
 
         httpClient.close();
+        return forecastResponse;
+    }
+
+    public static void main(String[] args) throws IOException {
+        ForecastResponse forecastResponse = checkWeatherForecast();
 
         WeatherSummary weatherSummary = new WeatherSummary(forecastResponse);
 
@@ -131,6 +136,9 @@ public class WhatIsTheWeatherApp {
         weatherSummary.getForecasts().forEach(i -> System.out.printf("Upcoming Forecast: %s%n", i));
 
         System.out.println(weatherSummary);
+
+
+
     /*
       Create a new class called WeatherSummary from forecastResponsePayload and call
       System.out.println(...) on it with the following requirements:
@@ -144,7 +152,7 @@ public class WhatIsTheWeatherApp {
 
       - should be immutable
       - implement so that Collections.sort on a list of WeatherSummary objects would sort by getTime()
-          with the most recent coming first//@todo
+          with the most recent coming first
       - implement so that if multiple WeatherSummary objects are put into a HashSet with the same time,
           only 1 would be retained regardless of the other field values.
       - if System.out.println(weatherSummary) is called, all field values and the class name should
