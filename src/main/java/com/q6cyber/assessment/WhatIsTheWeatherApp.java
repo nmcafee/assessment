@@ -121,9 +121,16 @@ public class WhatIsTheWeatherApp {
 
         httpClient.close();
 
-        System.out.println(forecastResponse);
-
         WeatherSummary weatherSummary = new WeatherSummary(forecastResponse);
+
+        System.out.printf("Time of creation: %s%n", weatherSummary.getTime());
+        System.out.printf("Current forecast: %s%n", weatherSummary.getCurrentTemp());
+        System.out.printf("Current forecast: %s%n", weatherSummary.getCurrentForecast());
+        System.out.printf("Max temperature: %s%n", weatherSummary.getMaxTemp());
+        System.out.printf("Average Temp: %s%n", weatherSummary.getAverageTemp());
+        weatherSummary.getForecasts().forEach(i -> System.out.printf("Upcoming Forecast: %s%n", i));
+
+        System.out.println(weatherSummary);
     /*
       Create a new class called WeatherSummary from forecastResponsePayload and call
       System.out.println(...) on it with the following requirements:
@@ -137,7 +144,7 @@ public class WhatIsTheWeatherApp {
 
       - should be immutable
       - implement so that Collections.sort on a list of WeatherSummary objects would sort by getTime()
-          with the most recent coming first
+          with the most recent coming first//@todo
       - implement so that if multiple WeatherSummary objects are put into a HashSet with the same time,
           only 1 would be retained regardless of the other field values.
       - if System.out.println(weatherSummary) is called, all field values and the class name should
