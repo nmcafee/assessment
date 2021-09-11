@@ -1,23 +1,8 @@
 package com.q6cyber.assessment;
 
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.q6cyber.assessment.api.Config;
-import com.q6cyber.assessment.api.geocode.GeocodeResponse;
-import com.q6cyber.assessment.api.weather.ForecastGridResponse;
 import com.q6cyber.assessment.api.weather.ForecastResponse;
 
 import java.io.IOException;
-import java.util.*;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.*;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 
 
 public class WhatIsTheWeatherApp {
@@ -41,103 +26,20 @@ public class WhatIsTheWeatherApp {
     Add unit tests
    */
 
-    private static Object makeGetRequest(
-            CloseableHttpClient httpClient,
-            ObjectMapper objectMapper,
-            String url,
-            Class<?> classToDeserialize
-    ) throws IOException {
-        HttpGet request = new HttpGet(url);
-        return sendRequest(httpClient, objectMapper, request, classToDeserialize);
-    }
-
-    private static Object makePostRequest(
-            CloseableHttpClient httpClient,
-            ObjectMapper objectMapper,
-            String url,
-            Class<?> classToDeserialize,
-            List<NameValuePair> params
-    ) throws IOException {
-        HttpPost request = new HttpPost(url);
-        request.setEntity(new UrlEncodedFormEntity(params, UTF_8));
-        return sendRequest(httpClient, objectMapper, request, classToDeserialize);
-    }
-
-    private static Object sendRequest(
-            CloseableHttpClient httpClient,
-            ObjectMapper objectMapper,
-            HttpUriRequest request,
-            Class<?> classToDeserialize
-    ) throws IOException {
-        CloseableHttpResponse httpResponse = httpClient.execute(request);
-        Object payload = objectMapper.readValue(httpResponse.getEntity().getContent(), classToDeserialize);
-        httpResponse.close();
-        return payload;
-    }
-
-    // Find the latitude and longitude of Cumming, GA from the geocode api
-    private static GeocodeResponse getGoecodeResponse(CloseableHttpClient httpClient, ObjectMapper objectMapper) throws IOException {
-        List<NameValuePair> geocodeRequestParameters =
-                List.of(
-                        new BasicNameValuePair("locate", "Cumming, GA, United States"),
-                        new BasicNameValuePair("geoit", "JSON")
-                );
-        return (GeocodeResponse) makePostRequest(
-                httpClient,
-                objectMapper,
-                Config.getGeocodeUrl(),
-                GeocodeResponse.class,
-                geocodeRequestParameters
-        );
-    }
-
-    // Get the url to the weather forecast for Cumming, GA based on the latitude and longitude from the weather api
-    private static ForecastGridResponse getForecastGridResponse(CloseableHttpClient httpClient, ObjectMapper objectMapper, GeocodeResponse geocodeResponse) throws IOException {
-        return (ForecastGridResponse) makeGetRequest(
-                httpClient,
-                objectMapper,
-                String.format("https://api.weather.gov/points/%s,%s", geocodeResponse.getLatt(), geocodeResponse.getLongt()),
-                ForecastGridResponse.class
-        );
-    }
-
-    // Get the hourly forecast for Cumming, GA using the hourly forecast url also calling the weather api
-    private static ForecastResponse getForecastResponse(CloseableHttpClient httpClient, ObjectMapper objectMapper, ForecastGridResponse forecastGridResponse) throws IOException {
-        return (ForecastResponse) makeGetRequest(
-                httpClient,
-                objectMapper,
-                forecastGridResponse.getProperties().getForecastHourly(),
-                ForecastResponse.class
-        );
-    }
-
-    private static ForecastResponse checkWeatherForecast() throws IOException {
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        ObjectMapper objectMapper = Config.getObjectMapper();
-
-        GeocodeResponse geocodeResponse = getGoecodeResponse(httpClient, objectMapper);
-        ForecastGridResponse forecastGridResponse = getForecastGridResponse(httpClient, objectMapper, geocodeResponse);
-        ForecastResponse forecastResponse = getForecastResponse(httpClient, objectMapper, forecastGridResponse);
-
-        httpClient.close();
-        return forecastResponse;
-    }
-
     public static void main(String[] args) throws IOException {
-        ForecastResponse forecastResponse = checkWeatherForecast();
-
+        ForecastResponse forecastResponse = new ForecastChecker().checkForecast();
         WeatherSummary weatherSummary = new WeatherSummary(forecastResponse);
 
         System.out.printf("Time of creation: %s%n", weatherSummary.getTime());
         System.out.printf("Current forecast: %s%n", weatherSummary.getCurrentTemp());
         System.out.printf("Current forecast: %s%n", weatherSummary.getCurrentForecast());
         System.out.printf("Max temperature: %s%n", weatherSummary.getMaxTemp());
-        System.out.printf("Average Temp: %s%n", weatherSummary.getAverageTemp());
-        weatherSummary.getForecasts().forEach(i -> System.out.printf("Upcoming Forecast: %s%n", i));
+        System.out.printf("Average temperature: %s%n", weatherSummary.getAverageTemp());
 
-        System.out.println(weatherSummary);
+        System.out.print("Upcoming forecasts: \n\t");
+        weatherSummary.getForecasts().forEach(forecast -> System.out.printf("%s, ", forecast));
 
-
+        System.out.println("\n" + weatherSummary);
 
     /*
       Create a new class called WeatherSummary from forecastResponsePayload and call

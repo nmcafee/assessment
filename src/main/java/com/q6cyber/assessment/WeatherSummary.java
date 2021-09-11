@@ -9,10 +9,10 @@ import lombok.ToString;
 import java.util.Arrays;
 import java.util.Date;
 
-@EqualsAndHashCode
-@ToString
-final class WeatherSummary implements Comparable<WeatherSummary>{
 
+@ToString
+@EqualsAndHashCode
+final class WeatherSummary implements Comparable<WeatherSummary> {
     //sort collections of this object by time, most recent first
     @Override
     public int compareTo(WeatherSummary o) {
