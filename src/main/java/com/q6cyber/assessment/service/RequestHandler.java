@@ -1,4 +1,4 @@
-package com.q6cyber.assessment;
+package com.q6cyber.assessment.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.NameValuePair;

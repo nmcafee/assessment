@@ -1,6 +1,8 @@
-package com.q6cyber.assessment;
+package com.q6cyber.assessment.test;
 
+import com.q6cyber.assessment.service.ForecastChecker;
 import com.q6cyber.assessment.api.weather.ForecastResponse;
+import com.q6cyber.assessment.model.WeatherSummary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

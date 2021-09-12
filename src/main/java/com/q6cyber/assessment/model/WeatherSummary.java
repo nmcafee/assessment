@@ -1,4 +1,4 @@
-package com.q6cyber.assessment;
+package com.q6cyber.assessment.model;
 
 import com.q6cyber.assessment.api.weather.ForecastResponse;
 import com.q6cyber.assessment.api.weather.ForecastResponsePeriod;
@@ -12,7 +12,7 @@ import java.util.Date;
 
 @ToString
 @EqualsAndHashCode
-final class WeatherSummary implements Comparable<WeatherSummary> {
+public final class WeatherSummary implements Comparable<WeatherSummary> {
     // Sort collections of this object by time, most recent first
     @Override
     public int compareTo(WeatherSummary o) {

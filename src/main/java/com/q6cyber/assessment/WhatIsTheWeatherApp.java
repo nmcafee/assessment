@@ -1,6 +1,8 @@
 package com.q6cyber.assessment;
 
 import com.q6cyber.assessment.api.weather.ForecastResponse;
+import com.q6cyber.assessment.model.WeatherSummary;
+import com.q6cyber.assessment.service.ForecastChecker;
 
 import java.io.IOException;
 

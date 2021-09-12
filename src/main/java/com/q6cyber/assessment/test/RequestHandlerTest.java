@@ -1,6 +1,8 @@
-package com.q6cyber.assessment;
+package com.q6cyber.assessment.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.q6cyber.assessment.Config;
+import com.q6cyber.assessment.service.RequestHandler;
 import com.q6cyber.assessment.api.geocode.GeocodeResponse;
 import com.q6cyber.assessment.api.weather.ForecastGridResponse;
 import com.q6cyber.assessment.api.weather.ForecastResponse;
