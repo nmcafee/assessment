@@ -19,38 +19,28 @@ public final class WeatherSummary implements Comparable<WeatherSummary> {
         return o.getTime().compareTo(this.getTime());
     }
 
-    @Getter
-    private final Date time;
     private final ForecastResponse forecastResponse;
+
+    @Getter private final Date time;
+    @Getter private final int currentTemp;
+    @Getter private final String currentForecast;
+    @Getter private final int maxTemp;
+    @Getter private final int averageTemp;
+    @Getter private final Iterable<String> forecasts;
 
     public WeatherSummary(ForecastResponse forecastResponse) {
         this.forecastResponse = forecastResponse;
         this.time = new Date();
-    }
-
-    public int getCurrentTemp() {
-        return forecastResponse.getProperties().getPeriods()[0].getTemperature();
-    }
-
-    public String getCurrentForecast() {
-        return forecastResponse.getProperties().getPeriods()[0].getShortForecast();
-    }
-
-    public int getMaxTemp() {
-        return Arrays.stream(forecastResponse.getProperties().getPeriods()).parallel()
+        this.currentTemp = forecastResponse.getProperties().getPeriods()[0].getTemperature();
+        this.currentForecast = forecastResponse.getProperties().getPeriods()[0].getShortForecast();
+        this.maxTemp = Arrays.stream(forecastResponse.getProperties().getPeriods()).parallel()
                 .mapToInt(ForecastResponsePeriod::getTemperature)
                 .max().orElseThrow();
-    }
-
-    public int getAverageTemp() {
-        return Arrays.stream(forecastResponse.getProperties().getPeriods()).parallel()
+        this.averageTemp = Arrays.stream(forecastResponse.getProperties().getPeriods()).parallel()
                 .mapToInt(ForecastResponsePeriod::getTemperature)
                 .sum()
                 / forecastResponse.getProperties().getPeriods().length;
-    }
-
-    public Iterable<String> getForecasts() {
-        return Arrays.stream(forecastResponse.getProperties().getPeriods())
+        this.forecasts = Arrays.stream(forecastResponse.getProperties().getPeriods())
                 .map(ForecastResponsePeriod::getShortForecast).distinct()::iterator;
     }
 }
