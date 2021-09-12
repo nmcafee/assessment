@@ -19,8 +19,6 @@ public final class WeatherSummary implements Comparable<WeatherSummary> {
         return o.getTime().compareTo(this.getTime());
     }
 
-    private final ForecastResponse forecastResponse;
-
     @Getter private final Date time;
     @Getter private final int currentTemp;
     @Getter private final String currentForecast;
@@ -29,7 +27,6 @@ public final class WeatherSummary implements Comparable<WeatherSummary> {
     @Getter private final Iterable<String> forecasts;
 
     public WeatherSummary(ForecastResponse forecastResponse) {
-        this.forecastResponse = forecastResponse;
         this.time = new Date();
         this.currentTemp = forecastResponse.getProperties().getPeriods()[0].getTemperature();
         this.currentForecast = forecastResponse.getProperties().getPeriods()[0].getShortForecast();
