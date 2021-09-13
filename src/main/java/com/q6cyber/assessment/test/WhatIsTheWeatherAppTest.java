@@ -18,15 +18,10 @@ import static org.junit.jupiter.api.Assertions.*;
 class WhatIsTheWeatherAppTest {
     // implement so that Collections.sort on a list of WeatherSummary objects would sort by getTime()
     //with the most recent coming first
-    private ForecastResponse forecastResponse;
-
-    @BeforeEach
-    void setUp() throws IOException {
-        this.forecastResponse = new ForecastChecker().checkForecast();
-    }
-
     @Test
-    void comparatorTest() throws InterruptedException {
+    void comparatorTest() throws IOException, InterruptedException {
+        ForecastChecker forecastChecker = new ForecastChecker();
+        ForecastResponse forecastResponse = forecastChecker.checkForecast();
         List<WeatherSummary> weatherList = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             WeatherSummary tempWeatherSummary = new WeatherSummary(forecastResponse);
@@ -47,8 +42,10 @@ class WhatIsTheWeatherAppTest {
     // implement so that if multiple WeatherSummary objects are put into a HashSet with the same time,
     //only 1 would be retained regardless of the other field values.
     @Test
-    void hashsetDateDistinctionTest() {
+    void hashsetDateDistinctionTest() throws IOException {
         HashSet<WeatherSummary> hashSet = new HashSet<>();
+        ForecastChecker forecastChecker = new ForecastChecker();
+        ForecastResponse forecastResponse = forecastChecker.checkForecast();
         WeatherSummary weatherSummaryTemp = new WeatherSummary(forecastResponse);
         for (int i = 0; i < 5; i++) {
             hashSet.add(weatherSummaryTemp);
