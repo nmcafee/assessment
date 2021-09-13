@@ -2,29 +2,27 @@ package com.q6cyber.assessment.model;
 
 import com.q6cyber.assessment.api.weather.ForecastResponse;
 import com.q6cyber.assessment.api.weather.ForecastResponsePeriod;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.Arrays;
 import java.util.Date;
 
 
-@ToString
-@EqualsAndHashCode
-public final class WeatherSummary implements Comparable<WeatherSummary> {
+@Value
+@AllArgsConstructor // prevents an 'all args constructor' bc @value creates one by default
+public class WeatherSummary implements Comparable<WeatherSummary> {
     // Sort collections of this object by time, most recent first
     @Override
     public int compareTo(WeatherSummary o) {
         return o.getTime().compareTo(this.getTime());
     }
 
-    @Getter private final Date time;
-    @Getter private final int currentTemp;
-    @Getter private final String currentForecast;
-    @Getter private final int maxTemp;
-    @Getter private final int averageTemp;
-    @Getter private final Iterable<String> forecasts;
+    Date time;
+    int currentTemp;
+    String currentForecast;
+    int maxTemp;
+    int averageTemp;
+    Iterable<String> forecasts;
 
     public WeatherSummary(ForecastResponse forecastResponse) {
         this.time = new Date();

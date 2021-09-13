@@ -16,32 +16,31 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 class WhatIsTheWeatherAppTest {
-    private WeatherSummary weatherSummary;
+    // implement so that Collections.sort on a list of WeatherSummary objects would sort by getTime()
+    //with the most recent coming first
     private ForecastResponse forecastResponse;
 
     @BeforeEach
     void setUp() throws IOException {
-        ForecastChecker forecastChecker = new ForecastChecker();
-        ForecastResponse forecastResponse = forecastChecker.checkForecast();
-        this.weatherSummary = new WeatherSummary(forecastResponse);
-        this.forecastResponse = new ForecastResponse();
+        this.forecastResponse = new ForecastChecker().checkForecast();
     }
 
-    // implement so that Collections.sort on a list of WeatherSummary objects would sort by getTime()
-    //with the most recent coming first
     @Test
-    void comparatorTest() {
+    void comparatorTest() throws InterruptedException {
         List<WeatherSummary> weatherList = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             WeatherSummary tempWeatherSummary = new WeatherSummary(forecastResponse);
+            Thread.sleep(1000);
             weatherList.add(tempWeatherSummary);
         }
 
         Collections.sort(weatherList);
 
-        WeatherSummary previousSummary = weatherSummary;
-        for (WeatherSummary tempWeatherSummary : weatherList) {
-            assertTrue(previousSummary.getTime().before(tempWeatherSummary.getTime()));
+        for (int i = 0; i < weatherList.size() - 1; i++) {
+            WeatherSummary currentSummary = weatherList.get(i);
+            WeatherSummary nextSummary = weatherList.get(i + 1);
+
+            assertTrue(nextSummary.getTime().before(currentSummary.getTime()));
         }
     }
 
@@ -50,8 +49,8 @@ class WhatIsTheWeatherAppTest {
     @Test
     void hashsetDateDistinctionTest() {
         HashSet<WeatherSummary> hashSet = new HashSet<>();
+        WeatherSummary weatherSummaryTemp = new WeatherSummary(forecastResponse);
         for (int i = 0; i < 5; i++) {
-            WeatherSummary weatherSummaryTemp = new WeatherSummary(forecastResponse);
             hashSet.add(weatherSummaryTemp);
         }
         assertEquals(1, hashSet.size());
